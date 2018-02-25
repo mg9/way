@@ -64,8 +64,12 @@ class FirstViewController: UIViewController {
             print(heartRateInCount)
             
             if let heartRate = self.userHealthProfile.heartRate {
-                self.heartRateLabel.text = "Your heart rate: " + heartRate.description
+                DispatchQueue.main.async { // Correct
+                    self.heartRateLabel.text = "Your heart rate: " + heartRate.description
+                    self.label.text  = "Done!"
+                }
             }
+        
         }
     }
     
@@ -75,11 +79,12 @@ class FirstViewController: UIViewController {
     
     func changeSwitchText() {
         if authSwitch.isOn {
-            label.text = "Switch is on"
+            label.text = "Wait, we are listening to your heart!"
             authorizeHealthKit()
             loadAndDisplayHeartRate()
         } else {
-            label.text = "Switch is off"
+            label.text = "tell 'em all"
+            self.heartRateLabel.text = "Your heart rate: -" 
         }
     }
     
