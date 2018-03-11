@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C1264AB205420D9002A7612 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1264A8205420D9002A7612 /* CocoaAsyncSocket.framework */; };
+		3C1264AC205420D9002A7612 /* SwiftyTimer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1264A9205420D9002A7612 /* SwiftyTimer.framework */; };
+		3C1264AD205420D9002A7612 /* CocoaMQTT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1264AA205420D9002A7612 /* CocoaMQTT.framework */; };
+		3C3D6A342054659F00DB7B41 /* SwiftyJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3D6A332054659F00DB7B41 /* SwiftyJSON.swift */; };
 		53403157202F799F00C58A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53403156202F799F00C58A11 /* AppDelegate.swift */; };
 		53403159202F799F00C58A11 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53403158202F799F00C58A11 /* FirstViewController.swift */; };
 		5340315E202F799F00C58A11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5340315C202F799F00C58A11 /* Main.storyboard */; };
@@ -38,6 +42,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3C1264A8205420D9002A7612 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		3C1264A9205420D9002A7612 /* SwiftyTimer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyTimer.framework; path = Carthage/Build/iOS/SwiftyTimer.framework; sourceTree = "<group>"; };
+		3C1264AA205420D9002A7612 /* CocoaMQTT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaMQTT.framework; path = Carthage/Build/iOS/CocoaMQTT.framework; sourceTree = "<group>"; };
+		3C3D6A332054659F00DB7B41 /* SwiftyJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftyJSON.swift; sourceTree = "<group>"; };
 		53403153202F799F00C58A11 /* way.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = way.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53403156202F799F00C58A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		53403158202F799F00C58A11 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
@@ -63,6 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C1264AB205420D9002A7612 /* CocoaAsyncSocket.framework in Frameworks */,
+				3C1264AC205420D9002A7612 /* SwiftyTimer.framework in Frameworks */,
+				3C1264AD205420D9002A7612 /* CocoaMQTT.framework in Frameworks */,
 				5340318B202F969500C58A11 /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,6 +129,7 @@
 				53403164202F799F00C58A11 /* Info.plist */,
 				538A5279203A1BE00094FDBC /* UserHealthProfile.swift */,
 				538A527B203A1C970094FDBC /* ProfileDataStore.swift */,
+				3C3D6A332054659F00DB7B41 /* SwiftyJSON.swift */,
 			);
 			path = way;
 			sourceTree = "<group>";
@@ -143,6 +155,9 @@
 		53403187202F959E00C58A11 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3C1264A8205420D9002A7612 /* CocoaAsyncSocket.framework */,
+				3C1264AA205420D9002A7612 /* CocoaMQTT.framework */,
+				3C1264A9205420D9002A7612 /* SwiftyTimer.framework */,
 				5340318A202F969500C58A11 /* HealthKit.framework */,
 			);
 			name = Frameworks;
@@ -158,6 +173,7 @@
 				5340314F202F799F00C58A11 /* Sources */,
 				53403150202F799F00C58A11 /* Frameworks */,
 				53403151202F799F00C58A11 /* Resources */,
+				3C1264AE205420E3002A7612 /* Run Script */,
 			);
 			buildRules = (
 			);
@@ -218,6 +234,9 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
 							com.apple.HealthKit = {
 								enabled = 1;
 							};
@@ -282,12 +301,33 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		3C1264AE205420E3002A7612 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/CocoaMQTT.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/SwiftyTimer.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/CocoaAsyncSocket.framework",
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		5340314F202F799F00C58A11 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				538A527C203A1C970094FDBC /* ProfileDataStore.swift in Sources */,
+				3C3D6A342054659F00DB7B41 /* SwiftyJSON.swift in Sources */,
 				53403157202F799F00C58A11 /* AppDelegate.swift in Sources */,
 				534297DE2042162200A82B8E /* HealthKitSetupAssistant.swift in Sources */,
 				53403159202F799F00C58A11 /* FirstViewController.swift in Sources */,
@@ -460,7 +500,12 @@
 				CODE_SIGN_ENTITLEMENTS = way/way.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Q7CY65RKJ7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = way/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = myth.way;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -476,7 +521,12 @@
 				CODE_SIGN_ENTITLEMENTS = way/way.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = Q7CY65RKJ7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = way/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = myth.way;
 				PRODUCT_NAME = "$(TARGET_NAME)";

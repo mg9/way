@@ -9,7 +9,9 @@
 import UIKit
 import HealthKit
 import CocoaMQTT
-class FirstViewController: UIViewController {
+import CoreLocation
+
+class FirstViewController: UIViewController, CLLocationManagerDelegate {
     
     private let authorizeHealthKitSection = 2
     let healthKitStore: HKHealthStore = HKHealthStore()
@@ -21,11 +23,28 @@ class FirstViewController: UIViewController {
    
     var mqtt: CocoaMQTT?
     var animal: String?
+    var timer:Timer?
+    var message: String?
+    var lat: CLLocationDegrees?
+    var lon: CLLocationDegrees?
     let defaultHost = "iot.eteration.com"
+    var deviceId = UIDevice.current.identifierForVendor!.uuidString
+    var deviceName = UIDevice.current.name
+    var locationManager: CLLocationManager!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestAlwaysAuthorization()
+        
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.startUpdatingLocation()
+            
+        }
+
         // Do any additional setup after loading the view, typically from a nib.
     }
     
@@ -38,23 +57,7 @@ class FirstViewController: UIViewController {
         mqtt!.keepAlive = 60
         mqtt!.delegate = self
     }
-    
-//    private func mqttConnector() {
-//
-//        let clientID = "CocoaMQTT-" + String(ProcessInfo().processIdentifier)
-//        let mqtt = CocoaMQTT(clientID: clientID, host: "localhost", port: 1883)
-//        mqtt.username = ""
-//        mqtt.password = ""
-//        mqtt.willMessage = CocoaMQTTWill(topic: "/will", message: "dieout")
-//        mqtt.keepAlive = 2560
-//        mqtt.delegate = self
-//        mqtt.connect()
-//        mqtt.didReceiveMessage = { mqtt, message, id in
-//            print("Message received in topic \(message.topic) with payload \(message.string!)")
-//        }
-//    }
-    
-    
+
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -81,7 +84,25 @@ class FirstViewController: UIViewController {
         }
     }
     
-    private func loadAndDisplayHeartRate() {
+    
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let userLocation:CLLocation = locations[0] as CLLocation
+        
+        
+        print("user latitude = \(userLocation.coordinate.latitude)")
+        lat = userLocation.coordinate.latitude
+        print("user longitude = \(userLocation.coordinate.longitude)")
+        lon=userLocation.coordinate.longitude
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
+    {
+        print("Error \(error)")
+    }
+
+    
+    @objc private func loadAndDisplayHeartRate() {
         //1. Use HealthKit to create the HeartRate Sample Type
         guard let heartRateSampleType = HKSampleType.quantityType(forIdentifier: .heartRate) else {
             print ("HeartRate Sample Type is no longer available for HealthKit")
@@ -112,12 +133,12 @@ class FirstViewController: UIViewController {
     }
     
     func changeSwitchText() {
+        timer?.invalidate()
+        
         if authSwitch.isOn {
             label.text = "Wait, we are listening to your heart!"
             authorizeHealthKit()
-            loadAndDisplayHeartRate()
-            
-            
+            timer = Timer.scheduledTimer(timeInterval: 0.97, target: self, selector: #selector(self.loadAndDisplayHeartRate), userInfo: nil, repeats: true)
         } else {
             label.text = "tell 'em all"
             self.heartRateLabel.text = "Your heart rate: -"
@@ -129,15 +150,7 @@ extension FirstViewController: CocoaMQTTDelegate {
     // Optional ssl CocoaMQTTDelegate
     func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
         TRACE("trust: \(trust)")
-        /// Validate the server certificate
-        ///
-        /// Some custom validation...
-        ///
-        /// if validatePassed {
-        ///     completionHandler(true)
-        /// } else {
-        ///     completionHandler(false)
-        /// }
+
         completionHandler(true)
     }
     
@@ -147,18 +160,30 @@ extension FirstViewController: CocoaMQTTDelegate {
         if ack == .accept {
             mqtt.subscribe("chat/room/animals/client", qos: CocoaMQTTQOS.qos1)
             print("hellooooo")
-//            let chatViewController = storyboard?.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController
-//            chatViewController?.mqtt = mqtt
-//            navigationController!.pushViewController(chatViewController!, animated: true)
-            if let heartRate = self.userHealthProfile.heartRate {
+
+           
                 DispatchQueue.main.async { // Correct
-                    let message = self.userHealthProfile.heartRate?.description
-                    mqtt.publish("oley" , withString: message!, qos: .qos1)
+                    self.message = self.userHealthProfile.heartRate?.description
+                    self.timer = Timer.scheduledTimer(timeInterval: 19.7, target: self, selector: #selector(self.publish), userInfo: nil, repeats: true)
+                    
                 }
-            }
             
         }
         
+    }
+    
+    @objc func publish(){
+
+        
+        let json: JSON =  ["deviceID":deviceId,
+                           "deviceName":deviceName,
+                           "healthData": ["heartRate": self.heartRateLabel.text],
+                           "location": ["latitude":lat,"longitude":lon]
+                            ]
+
+        mqtt?.publish("way/pi3/WayCEPEngine/oley" , withString:json.description , qos: .qos1)
+        print(deviceId)
+        print(deviceName)
     }
     
     func mqtt(_ mqtt: CocoaMQTT, didStateChangeTo state: CocoaMQTTConnState) {
