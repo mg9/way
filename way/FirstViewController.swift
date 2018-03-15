@@ -20,9 +20,14 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var heartRateLabel: UILabel!
     
     private let userHealthProfile = UserHealthProfile()
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
    
     var mqtt: CocoaMQTT?
     var animal: String?
+    var gender: String?
+    var heartRate: Double?
+    var height: Double?
+    var weight: Double?
     var timer:Timer?
     var message: String?
     var lat: CLLocationDegrees?
@@ -118,12 +123,68 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
             
             if let heartRate = self.userHealthProfile.heartRate {
                 DispatchQueue.main.async { // Correct
+                    self.heartRate = heartRate
                     self.heartRateLabel.text = "Your heart rate: " + heartRate.description
                     self.label.text  = "Done!"
                 }
             }
-            
         }
+        
+        self.loadUserBiologicalInformation()
+    }
+    
+    
+    @objc private func loadUserBiologicalInformation() {
+
+        
+        //HEIGHT
+        
+        //1. Use HealthKit to create the Height Sample Type
+        guard let heightSampleType = HKSampleType.quantityType(forIdentifier: .height) else {
+            print("Height Sample Type is no longer available in HealthKit")
+            return
+        }
+        
+        
+        ProfileDataStore.getMostRecentSample(for: heightSampleType){ (sample, error) in
+            guard let sample = sample else {
+                if let error = error {
+                   // self.displayAlert(for: error)
+                }
+                return
+            }
+            
+            //2. Convert the height sample to meters, save to the profile model,
+            //   and update the user interface.
+            let heightInMeters = sample.quantity.doubleValue(for: HKUnit.meter())
+            self.userHealthProfile.heightInMeters = heightInMeters
+            self.height = self.userHealthProfile.heightInMeters
+        }
+        
+        
+        
+        //WEIGHT
+        
+        guard let weightSampleType = HKSampleType.quantityType(forIdentifier: .bodyMass) else {
+            print("Body Mass Sample Type is no longer available in HealthKit")
+            return
+        }
+        
+        ProfileDataStore.getMostRecentSample(for: weightSampleType) { (sample, error) in
+            
+            guard let sample = sample else {
+                
+                if let error = error {
+                    //self.displayAlert(for: error)
+                }
+                return
+            }
+            
+            let weightInKilograms = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+            self.userHealthProfile.weightInKilograms = weightInKilograms
+            self.weight = self.userHealthProfile.weightInKilograms
+        }
+    
     }
     
     @IBAction func authSwitchToggled(_ sender: UISwitch) {
@@ -177,8 +238,9 @@ extension FirstViewController: CocoaMQTTDelegate {
         
         let json: JSON =  ["deviceID":deviceId,
                            "deviceName":deviceName,
-                           "healthData": ["heartRate": self.heartRateLabel.text],
-                           "location": ["latitude":lat,"longitude":lon]
+                           "healthData": ["heartRate": heartRate, "height":height, "weight":weight],
+                           "location": ["latitude":lat,"longitude":lon],
+                           "token":appDelegate.token
                             ]
 
         mqtt?.publish("way/pi3/WayCEPEngine/oley" , withString:json.description , qos: .qos1)
